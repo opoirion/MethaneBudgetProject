@@ -34,10 +34,13 @@ from copy import deepcopy
 
 from sys import stdout
 
-from random import sample
+from random import choice
 
 from scipy.spatial.distance import correlation
 from scipy.stats import kendalltau
+
+from functools import reduce
+
 
 def main():
     """ """
@@ -150,7 +153,7 @@ class PlasticModel():
             elif self.method == 'MONTECARLO':
                 self._next_params_gen = self._next_params_montecarlo()
 
-        return self._next_params_gen.next()
+        return next(self._next_params_gen)
 
     def next_year(self, init=False):
         """ """
@@ -161,7 +164,7 @@ class PlasticModel():
         if not self._next_year_gen:
             self._next_year_gen = iter(sorted(self.dumped_plastic_per_year.keys()))
 
-        return self._next_year_gen.next()
+        return next(self._next_year_gen)
 
     def _next_params_exact(self):
         """ """
@@ -196,7 +199,7 @@ class PlasticModel():
         for it in range(self.n_it):
 
             for param in self.params_list:
-                value = sample(self.params_list[param], 1)[0]
+                value = choice(self.params_list[param])
 
                 self.params[param] = value
 
@@ -315,7 +318,7 @@ class PlasticModel():
                                         self._final_values)
             self.features_score[feature] = score
 
-            print 'score: {0}, p-value: {1} for:{2}'.format(score, pvalue, feature)
+            print('score: {0}, p-value: {1} for:{2}'.format(score, pvalue, feature))
 
 
 if __name__ == "__main__":

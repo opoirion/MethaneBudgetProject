@@ -35,7 +35,8 @@ def main():
 
     seaborn.set(font_scale=1.25)
     fontsize = 17
-    matrix = np.asarray(model.methane_production_total.values())
+    matrix = np.asarray([arr for arr in model.methane_production_total.values()])
+
     sea = seaborn.tsplot(matrix.T, time=years,
                          legend=True,
                          # ci=[0, 100],
@@ -70,11 +71,11 @@ def main():
 
     # make time serie for plastic particles in suspension
     ax = axes[1]#[0]
-    matrix_multiple = np.asarray([model.plastic_in_ocean[key].values()
+    matrix_multiple = np.asarray([[arr for arr in model.plastic_in_ocean[key].values()]
                                   for key in model.plastic_in_ocean])
 
     labels = model.plastic_in_ocean.keys()
-
+    import ipdb;ipdb.set_trace()
     sea = seaborn.tsplot(data=matrix_multiple.T,
                          time=years,
                          # value='plastic mass',

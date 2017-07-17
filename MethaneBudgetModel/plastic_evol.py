@@ -13,13 +13,13 @@ from MethaneBudgetModel.config import PERC_PLASTIC_TRANSFORMED_TO_POWDER
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_POWDER
 
-from MethaneBudgetModel.config import PERC_PLASTIC_LDPE
 from MethaneBudgetModel.config import PELLET_TO_METHANE
 from MethaneBudgetModel.config import PELLET_TO_METHANE_STD
 from MethaneBudgetModel.config import FLAKE_TO_METHANE
 from MethaneBudgetModel.config import FLAKE_TO_METHANE_STD
 from MethaneBudgetModel.config import POWDER_TO_METHANE
 from MethaneBudgetModel.config import POWDER_TO_METHANE_STD
+from MethaneBudgetModel.config import CONSTANT
 
 from collections import defaultdict
 
@@ -38,8 +38,6 @@ def main():
     plastic_model = PlasticModel()
     plastic_model.fit()
 
-    import ipdb;ipdb.set_trace()
-
 class PlasticModel():
     """ """
     def __init__(self):
@@ -48,16 +46,15 @@ class PlasticModel():
 
         self.methane_production_year = defaultdict(list)
         self.methane_production_total = defaultdict(list)
+        self.params_var = defaultdict(list)
 
         self._methane_total = np.array([0.0, 0.0, 0.0])
         self._param_changed = None
         self._next_params_gen = None
         self._next_year_gen = None
-        self._params_var = defaultdict(list)
 
         self.current_year = None
         self.incoming_plastic = None
-        self.perc_plastic_ldpe = PERC_PLASTIC_LDPE
 
         self.pellet_to_methane = PELLET_TO_METHANE
         self.pellet_to_methane_std = PELLET_TO_METHANE_STD
@@ -65,14 +62,16 @@ class PlasticModel():
         self.flake_to_methane_std = FLAKE_TO_METHANE_STD
         self.powder_to_methane = POWDER_TO_METHANE
         self.powder_to_methane_std = POWDER_TO_METHANE_STD
+        self.constant = CONSTANT
 
         self.plastic = {
             'raw': 0.0,
             'pellet': 0.0,
             'flake':0.0,
             'powder':0.0,
-            'total': 0.0
         }
+
+        self.plastic_in_ocean = {key:defaultdict(list) for key in self.plastic}
 
         self.params = {
             'perc_flake_powder': None,
@@ -164,6 +163,13 @@ class PlasticModel():
 
     def init(self):
         """ """
+        self.plastic = {
+            'raw': 0.0,
+            'pellet': 0.0,
+            'flake':0.0,
+            'powder':0.0,
+        }
+
         self._methane_total = np.array([0.0, 0.0, 0.0])
         self.current_year = self.next_year(init=True)
         self.incoming_plastic = self.dumped_plastic_per_year[self.current_year]
@@ -172,15 +178,21 @@ class PlasticModel():
         """ """
         methane_prod = defaultdict(list)
 
-        self.plastic['raw'] = self.plastic['raw'] * (1.0 - self.params['plastic_removed']) + \
-                              self.incoming_plastic * self.perc_plastic_ldpe
+        self.plastic['raw'] = self.plastic['raw'] * (1.0 - self.params['plastic_removed']) -\
+                              self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
+                              self.plastic['raw'] * self.params['perc_plastic_flake'] - \
+                              self.plastic['raw'] * self.params['perc_plastic_powder'] + \
+                              self.incoming_plastic * self.params['plastic_susp']
 
         self.plastic['pellet'] = self.plastic['pellet'] * (1.0 - self.params['pellet_removed']) + \
-                                 self.plastic['raw'] * self.params['perc_plastic_pellet']
+                                 self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
+                                 self.plastic['pellet'] * self.params['perc_pellet_flake'] - \
+                                 self.plastic['pellet'] * self.params['perc_pellet_powder']
 
         self.plastic['flake'] = self.plastic['flake'] * (1.0 - self.params['flake_removed']) + \
                                  self.plastic['raw'] * self.params['perc_plastic_flake'] + \
-                                 self.plastic['pellet'] * self.params['perc_pellet_flake']
+                                 self.plastic['pellet'] * self.params['perc_pellet_flake'] - \
+                                 self.plastic['flake'] * self.params['perc_flake_powder']
 
         self.plastic['powder'] = self.plastic['powder'] * (1.0 - self.params['powder_removed']) + \
                                  self.plastic['raw'] * self.params['perc_plastic_powder'] + \
@@ -206,9 +218,15 @@ class PlasticModel():
                                       self.powder_to_methane_std)
 
         self._increment_methane_prod(methane_prod)
+        self._increment_plastic_in_ocean()
 
         self.current_year = self.next_year()
         self.incoming_plastic = self.dumped_plastic_per_year[self.current_year]
+
+    def _increment_plastic_in_ocean(self):
+        """ """
+        for plastic in self.plastic:
+            self.plastic_in_ocean[plastic][self.current_year].append(self.plastic[plastic])
 
     def _increment_methane_prod(self, methane_prod):
         """ """
@@ -217,9 +235,9 @@ class PlasticModel():
         for methane in product(*methane_prod.values()):
             methane_prod_values.append(reduce(lambda x, y: x + y, methane))
 
-        methane_mean = np.mean(methane_prod_values)
-        methane_max = np.mean(methane_prod_values)
-        methane_min = np.max(methane_prod_values)
+        methane_mean = np.mean(methane_prod_values) * self.constant
+        methane_max = np.mean(methane_prod_values) * self.constant
+        methane_min = np.max(methane_prod_values) * self.constant
 
         self.methane_production_year[self.current_year].append(methane_mean)
         self.methane_production_year[self.current_year].append(methane_min)
@@ -252,7 +270,7 @@ class PlasticModel():
             self.iterate()
 
             if self._param_changed:
-                self._params_var[self._param_changed].append(self._methane_total[1])
+                self.params_var[self._param_changed].append(self._methane_total[1])
 
             i += 1
 

@@ -22,50 +22,54 @@ PATH_PLASTIC_THROUGH_YEAR_DUMPED = PATH_THIS_FILE + '/../data/plastic_production
 
 #################### ALGORITHM ###########################################
 METHOD = 'MONTECARLO' # 'EXACT' or 'MONTECARLO'
-N_IT = 500
+N_IT = 300
 ##########################################################################
 
 #################### CONSTANT ############################################
-CONSTANT = 1.0e-09
-PELLET_TO_METHANE = 0.08 * 365 # nanomol per gram per day
-PELLET_TO_METHANE_STD = 0.02
-FLAKE_TO_METHANE = 2.22 * 365
-FLAKE_TO_METHANE_STD = 1.0
-POWDER_TO_METHANE = 54.95 * 365
-POWDER_TO_METHANE_STD = 4.06
+CONSTANT = 1.0e-09 * 365
+LINSPACE_DOTS = 20
 ##########################################################################
 
 #################### VARIABLE ############################################
+# original: PLASTIC_TO_METHANE = 0.01 Not based on real values
+PLASTIC_TO_METHANE = linspace(0.005, 0.02, LINSPACE_DOTS)
+# original: PELLET_TO_METHANE = 0.08 std 0.02
+PELLET_TO_METHANE = linspace(0.05, 0.12, LINSPACE_DOTS)
+# original: FLAKE_TO_METHANE = 2.22 std 1.0
+FLAKE_TO_METHANE = linspace(1.0, 5.0, LINSPACE_DOTS)
+# original: POWDER_TO_METHANE = 54.95 std 4.06
+POWDER_TO_METHANE = linspace(40, 70.0, LINSPACE_DOTS)
+
 # percentage of plastic in suspension (i.e. perc of LDPE)
-PERC_PLASTIC_SUSPENSION = [0.70]
+PERC_PLASTIC_SUSPENSION = linspace(0.60, 0.80, LINSPACE_DOTS)
 
 # percentage of plastic in suspension disapearing each year
-PERC_PLASTIC_REMOVED = linspace(0.20, 0.30, 1)
+PERC_PLASTIC_REMOVED = linspace(0.30, 0.40, LINSPACE_DOTS)
 
 # percentage of pellet in suspension disapearing each year
-PERC_PELLET_REMOVED = linspace(0.10, 0.20, 1)
+PERC_PELLET_REMOVED = linspace(0.20, 0.30, LINSPACE_DOTS)
 
 # percentage of flake in suspension disapearing each year
-PERC_FLAKE_REMOVED = linspace(0.10, 0.20, 2)
+PERC_FLAKE_REMOVED = linspace(0.10, 0.20, LINSPACE_DOTS)
 
 # percentage of powder in suspension disapearing each year
-PERC_POWDER_REMOVED = linspace(0.05, 0.10, 2)
+PERC_POWDER_REMOVED = linspace(0.05, 0.10, LINSPACE_DOTS)
 
 # percentage of raw plastic in suspension transformed into pellet each year
-PERC_PLASTIC_TRANSFORMED_TO_PELLET = linspace(0.01, 0.1, 2)
+PERC_PLASTIC_TRANSFORMED_TO_PELLET = linspace(0.001, 0.01, LINSPACE_DOTS)
 
 # percentage of raw plastic in suspension transformed into pellet each year
-PERC_PLASTIC_TRANSFORMED_TO_FLAKE = linspace(0.01, 0.1, 2)
+PERC_PLASTIC_TRANSFORMED_TO_FLAKE = linspace(0.001, 0.01, LINSPACE_DOTS)
 
-# percentage of raw plastic in suspension transformed into pellet each year
-PERC_PLASTIC_TRANSFORMED_TO_POWDER = linspace(0.001, 0.01, 2)
+# percentage of raw plastic in suspension transformed into powder each year
+PERC_PLASTIC_TRANSFORMED_TO_POWDER = linspace(0.01, 0.05, LINSPACE_DOTS)
 
-# percentage of pellet in suspension transformed into pellet each year
-PERC_PELLET_TRANSFORMED_TO_FLAKE = linspace(0.05, 0.10, 2)
+# percentage of pellet in suspension transformed into flake each year
+PERC_PELLET_TRANSFORMED_TO_FLAKE = linspace(0.05, 0.10, LINSPACE_DOTS)
 
-# percentage of pellet in suspension transformed into pellet each year
-PERC_PELLET_TRANSFORMED_TO_POWDER = linspace(0.10, 0.20, 2)
+# percentage of pellet in suspension transformed into powder each year
+PERC_PELLET_TRANSFORMED_TO_POWDER = linspace(0.10, 0.20, LINSPACE_DOTS)
 
-# percentage of pellet in suspension transformed into pellet each year
-PERC_FLAKE_TRANSFORMED_TO_POWDER = linspace(0.05, 0.10, 2)
+# percentage of flake in suspension transformed into powder each year
+PERC_FLAKE_TRANSFORMED_TO_POWDER = linspace(0.05, 0.10, LINSPACE_DOTS)
 #############################################################################

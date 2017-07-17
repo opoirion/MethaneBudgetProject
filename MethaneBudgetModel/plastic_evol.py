@@ -13,13 +13,13 @@ from MethaneBudgetModel.config import PERC_PLASTIC_TRANSFORMED_TO_POWDER
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_POWDER
 
+from MethaneBudgetModel.config import PLASTIC_TO_METHANE
 from MethaneBudgetModel.config import PELLET_TO_METHANE
-from MethaneBudgetModel.config import PELLET_TO_METHANE_STD
 from MethaneBudgetModel.config import FLAKE_TO_METHANE
-from MethaneBudgetModel.config import FLAKE_TO_METHANE_STD
 from MethaneBudgetModel.config import POWDER_TO_METHANE
-from MethaneBudgetModel.config import POWDER_TO_METHANE_STD
 from MethaneBudgetModel.config import CONSTANT
+from MethaneBudgetModel.config import METHOD
+from MethaneBudgetModel.config import N_IT
 
 from collections import defaultdict
 
@@ -32,6 +32,10 @@ from copy import deepcopy
 
 from sys import stdout
 
+from random import sample
+
+from scipy.spatial.distance import correlation
+from scipy.stats import kendalltau
 
 def main():
     """ """
@@ -42,13 +46,18 @@ class PlasticModel():
     """ """
     def __init__(self):
         """ """
+        self.method = METHOD
+        self.n_it = N_IT
+
         self.dumped_plastic_per_year = defaultdict(float)
 
         self.methane_production_year = defaultdict(list)
         self.methane_production_total = defaultdict(list)
-        self.params_var = defaultdict(list)
+        self._params_var = defaultdict(list)
+        self._final_values = []
+        self.features_score = {}
 
-        self._methane_total = np.array([0.0, 0.0, 0.0])
+        self._methane_total = 0.0
         self._param_changed = None
         self._next_params_gen = None
         self._next_year_gen = None
@@ -56,12 +65,10 @@ class PlasticModel():
         self.current_year = None
         self.incoming_plastic = None
 
+        self.plastic_to_methane = PLASTIC_TO_METHANE
         self.pellet_to_methane = PELLET_TO_METHANE
-        self.pellet_to_methane_std = PELLET_TO_METHANE_STD
         self.flake_to_methane = FLAKE_TO_METHANE
-        self.flake_to_methane_std = FLAKE_TO_METHANE_STD
         self.powder_to_methane = POWDER_TO_METHANE
-        self.powder_to_methane_std = POWDER_TO_METHANE_STD
         self.constant = CONSTANT
 
         self.plastic = {
@@ -85,6 +92,10 @@ class PlasticModel():
             'pellet_removed': None,
             'powder_removed': None,
             'plastic_susp': None,
+            'plastic_to_methane': None,
+            'pellet_to_methane': None,
+            'flake_to_methane': None,
+            'powder_to_methane': None,
             }
 
         self.params_list = {
@@ -99,10 +110,20 @@ class PlasticModel():
             'pellet_removed': PERC_PELLET_REMOVED,
             'powder_removed': PERC_POWDER_REMOVED,
             'plastic_susp': PERC_PLASTIC_SUSPENSION,
+            'plastic_to_methane': PLASTIC_TO_METHANE,
+            'pellet_to_methane': PELLET_TO_METHANE,
+            'flake_to_methane': FLAKE_TO_METHANE,
+            'powder_to_methane': POWDER_TO_METHANE
         }
 
         self._load_plastic_per_year()
-        self._nb_experiments = self._compute_nb_experiments()
+
+        if self.method == 'EXACT':
+            self._nb_experiments = self._compute_nb_experiments()
+            self.n_it = self._nb_experiments
+
+        else:
+            self._nb_experiments = self.n_it
 
     def _compute_nb_experiments(self):
         """ """
@@ -121,13 +142,17 @@ class PlasticModel():
     def next_params(self):
         """ """
         if not self._next_params_gen:
-            self._next_params_gen = self._next_params()
+            if self.method == 'EXACT':
+                self._next_params_gen = self._next_params_exact()
+            elif self.method == 'MONTECARLO':
+                self._next_params_gen = self._next_params_montecarlo()
 
         return self._next_params_gen.next()
 
     def next_year(self, init=False):
         """ """
         if init:
+
             self._next_year_gen = None
 
         if not self._next_year_gen:
@@ -135,7 +160,7 @@ class PlasticModel():
 
         return self._next_year_gen.next()
 
-    def _next_params(self):
+    def _next_params_exact(self):
         """ """
         zipped_lists = []
 
@@ -161,6 +186,19 @@ class PlasticModel():
 
             yield param_changed
 
+    def _next_params_montecarlo(self):
+        """ """
+        zipped_lists = []
+
+        for it in range(self.n_it):
+
+            for param in self.params_list:
+                value = sample(self.params_list[param], 1)[0]
+
+                self.params[param] = value
+
+            yield True
+
     def init(self):
         """ """
         self.plastic = {
@@ -170,7 +208,7 @@ class PlasticModel():
             'powder':0.0,
         }
 
-        self._methane_total = np.array([0.0, 0.0, 0.0])
+        self._methane_total = 0.0
         self.current_year = self.next_year(init=True)
         self.incoming_plastic = self.dumped_plastic_per_year[self.current_year]
 
@@ -199,23 +237,10 @@ class PlasticModel():
                                  self.plastic['pellet'] * self.params['perc_pellet_powder'] +\
                                  self.plastic['flake'] * self.params['perc_flake_powder']
 
-        methane_prod['pellet'].append(self.plastic['pellet'] * self.pellet_to_methane)
-        methane_prod['pellet'].append(self.plastic['pellet'] * self.pellet_to_methane -\
-                                      self.pellet_to_methane_std)
-        methane_prod['pellet'].append(self.plastic['pellet'] * self.pellet_to_methane +\
-                                      self.pellet_to_methane_std)
-
-        methane_prod['flake'].append(self.plastic['flake'] * self.flake_to_methane)
-        methane_prod['flake'].append(self.plastic['flake'] * self.flake_to_methane -\
-                                      self.flake_to_methane_std)
-        methane_prod['flake'].append(self.plastic['flake'] * self.flake_to_methane +\
-                                      self.flake_to_methane_std)
-
-        methane_prod['powder'].append(self.plastic['powder'] * self.powder_to_methane)
-        methane_prod['powder'].append(self.plastic['powder'] * self.powder_to_methane -\
-                                      self.powder_to_methane_std)
-        methane_prod['powder'].append(self.plastic['powder'] * self.powder_to_methane +\
-                                      self.powder_to_methane_std)
+        methane_prod['raw'].append(self.plastic['raw'] * self.params['plastic_to_methane'])
+        methane_prod['pellet'].append(self.plastic['pellet'] * self.params['pellet_to_methane'])
+        methane_prod['flake'].append(self.plastic['flake'] * self.params['flake_to_methane'])
+        methane_prod['powder'].append(self.plastic['powder'] * self.params['powder_to_methane'])
 
         self._increment_methane_prod(methane_prod)
         self._increment_plastic_in_ocean()
@@ -236,16 +261,11 @@ class PlasticModel():
             methane_prod_values.append(reduce(lambda x, y: x + y, methane))
 
         methane_mean = np.mean(methane_prod_values) * self.constant
-        methane_max = np.mean(methane_prod_values) * self.constant
-        methane_min = np.max(methane_prod_values) * self.constant
 
         self.methane_production_year[self.current_year].append(methane_mean)
-        self.methane_production_year[self.current_year].append(methane_min)
-        self.methane_production_year[self.current_year].append(methane_max)
+        self._methane_total += methane_mean
 
-        self._methane_total += np.array([methane_min, methane_mean, methane_max])
-
-        self.methane_production_total[self.current_year] += list(self._methane_total)
+        self.methane_production_total[self.current_year].append(self._methane_total)
 
     def iterate(self):
         """ """
@@ -269,15 +289,28 @@ class PlasticModel():
             self.init()
             self.iterate()
 
-            if self._param_changed:
-                self.params_var[self._param_changed].append(self._methane_total[1])
+            for param in self.params:
+                self._params_var[param].append(self.params[param])
+
+            self._final_values.append(self._methane_total)
 
             i += 1
 
             stdout.write('\r{0} / {1} conf done...'.format(i, self._nb_experiments))
             stdout.flush()
 
+        self._rank_features()
+
         print('\n')
+
+    def _rank_features(self):
+        """ """
+        for feature in self._params_var:
+            score, pvalue = kendalltau(self._params_var[feature],
+                                        self._final_values)
+            self.features_score[feature] = score
+
+            print 'score: {0}, p-value: {1} for:{2}'.format(score, pvalue, feature)
 
 
 if __name__ == "__main__":

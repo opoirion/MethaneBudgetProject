@@ -31,14 +31,20 @@ LINSPACE_DOTS = 20
 ##########################################################################
 
 #################### VARIABLE ############################################
+##### YEARLY AVERAGE
 # original: PLASTIC_TO_METHANE = 0.01 Not based on real values
 PLASTIC_TO_METHANE = linspace(0.005, 0.02, LINSPACE_DOTS)
+# New pellet: 4.44
+# NEW_PELLET_TO_METHANE = linspace(3.0, 6.0, LINSPACE_DOTS)
 # original: PELLET_TO_METHANE = 0.08 std 0.02
-PELLET_TO_METHANE = linspace(0.05, 0.12, LINSPACE_DOTS)
+# Aged pellet: 9.03
+AGED_PELLET_TO_METHANE = linspace(7.0, 11.0, LINSPACE_DOTS)
 # original: FLAKE_TO_METHANE = 2.22 std 1.0
-FLAKE_TO_METHANE = linspace(1.0, 5.0, LINSPACE_DOTS)
+# new value 123.35 (yearly average)
+FLAKE_TO_METHANE = linspace(100, 140, LINSPACE_DOTS)
 # original: POWDER_TO_METHANE = 54.95 std 4.06
-POWDER_TO_METHANE = linspace(40, 70.0, LINSPACE_DOTS)
+# new value 3053.16
+POWDER_TO_METHANE = linspace(2500, 3500, LINSPACE_DOTS)
 
 # percentage of plastic in suspension (i.e. perc of LDPE)
 PERC_PLASTIC_SUSPENSION = linspace(0.60, 0.80, LINSPACE_DOTS)

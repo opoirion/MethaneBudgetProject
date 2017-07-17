@@ -14,7 +14,7 @@ from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_POWDER
 
 from MethaneBudgetModel.config import PLASTIC_TO_METHANE
-from MethaneBudgetModel.config import PELLET_TO_METHANE
+from MethaneBudgetModel.config import AGED_PELLET_TO_METHANE
 from MethaneBudgetModel.config import FLAKE_TO_METHANE
 from MethaneBudgetModel.config import POWDER_TO_METHANE
 from MethaneBudgetModel.config import CONSTANT
@@ -66,7 +66,7 @@ class PlasticModel():
         self.incoming_plastic = None
 
         self.plastic_to_methane = PLASTIC_TO_METHANE
-        self.pellet_to_methane = PELLET_TO_METHANE
+        self.aged_pellet_to_methane = AGED_PELLET_TO_METHANE
         self.flake_to_methane = FLAKE_TO_METHANE
         self.powder_to_methane = POWDER_TO_METHANE
         self.constant = CONSTANT
@@ -93,7 +93,7 @@ class PlasticModel():
             'powder_removed': None,
             'plastic_susp': None,
             'plastic_to_methane': None,
-            'pellet_to_methane': None,
+            'aged_pellet_to_methane': None,
             'flake_to_methane': None,
             'powder_to_methane': None,
             }
@@ -111,7 +111,7 @@ class PlasticModel():
             'powder_removed': PERC_POWDER_REMOVED,
             'plastic_susp': PERC_PLASTIC_SUSPENSION,
             'plastic_to_methane': PLASTIC_TO_METHANE,
-            'pellet_to_methane': PELLET_TO_METHANE,
+            'aged_pellet_to_methane': AGED_PELLET_TO_METHANE,
             'flake_to_methane': FLAKE_TO_METHANE,
             'powder_to_methane': POWDER_TO_METHANE
         }
@@ -216,29 +216,29 @@ class PlasticModel():
         """ """
         methane_prod = defaultdict(list)
 
-        self.plastic['raw'] = self.plastic['raw'] * (1.0 - self.params['plastic_removed']) -\
-                              self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
-                              self.plastic['raw'] * self.params['perc_plastic_flake'] - \
-                              self.plastic['raw'] * self.params['perc_plastic_powder'] + \
-                              self.incoming_plastic * self.params['plastic_susp']
-
-        self.plastic['pellet'] = self.plastic['pellet'] * (1.0 - self.params['pellet_removed']) + \
-                                 self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
-                                 self.plastic['pellet'] * self.params['perc_pellet_flake'] - \
-                                 self.plastic['pellet'] * self.params['perc_pellet_powder']
+        self.plastic['powder'] = self.plastic['powder'] * (1.0 - self.params['powder_removed']) + \
+                                 self.plastic['raw'] * self.params['perc_plastic_powder'] + \
+                                 self.plastic['pellet'] * self.params['perc_pellet_powder'] +\
+                                 self.plastic['flake'] * self.params['perc_flake_powder']
 
         self.plastic['flake'] = self.plastic['flake'] * (1.0 - self.params['flake_removed']) + \
                                  self.plastic['raw'] * self.params['perc_plastic_flake'] + \
                                  self.plastic['pellet'] * self.params['perc_pellet_flake'] - \
                                  self.plastic['flake'] * self.params['perc_flake_powder']
 
-        self.plastic['powder'] = self.plastic['powder'] * (1.0 - self.params['powder_removed']) + \
-                                 self.plastic['raw'] * self.params['perc_plastic_powder'] + \
-                                 self.plastic['pellet'] * self.params['perc_pellet_powder'] +\
-                                 self.plastic['flake'] * self.params['perc_flake_powder']
+        self.plastic['pellet'] = self.plastic['pellet'] * (1.0 - self.params['pellet_removed']) + \
+                                 self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
+                                 self.plastic['pellet'] * self.params['perc_pellet_flake'] - \
+                                 self.plastic['pellet'] * self.params['perc_pellet_powder']
+
+        self.plastic['raw'] = self.plastic['raw'] * (1.0 - self.params['plastic_removed']) -\
+                              self.plastic['raw'] * self.params['perc_plastic_pellet'] - \
+                              self.plastic['raw'] * self.params['perc_plastic_flake'] - \
+                              self.plastic['raw'] * self.params['perc_plastic_powder'] + \
+                              self.incoming_plastic * self.params['plastic_susp']
 
         methane_prod['raw'].append(self.plastic['raw'] * self.params['plastic_to_methane'])
-        methane_prod['pellet'].append(self.plastic['pellet'] * self.params['pellet_to_methane'])
+        methane_prod['pellet'].append(self.plastic['pellet'] * self.params['aged_pellet_to_methane'])
         methane_prod['flake'].append(self.plastic['flake'] * self.params['flake_to_methane'])
         methane_prod['powder'].append(self.plastic['powder'] * self.params['powder_to_methane'])
 

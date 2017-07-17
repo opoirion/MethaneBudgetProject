@@ -13,6 +13,8 @@ from MethaneBudgetModel.config import PERC_PLASTIC_TRANSFORMED_TO_POWDER
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_POWDER
 
+from MethaneBudgetModel.config import PLASTIC_WEIGHT_CONSTANT
+
 from MethaneBudgetModel.config import PLASTIC_TO_METHANE
 from MethaneBudgetModel.config import AGED_PELLET_TO_METHANE
 from MethaneBudgetModel.config import FLAKE_TO_METHANE
@@ -70,6 +72,7 @@ class PlasticModel():
         self.flake_to_methane = FLAKE_TO_METHANE
         self.powder_to_methane = POWDER_TO_METHANE
         self.constant = CONSTANT
+        self.plastic_weight_constant = PLASTIC_WEIGHT_CONSTANT
 
         self.plastic = {
             'raw': 0.0,
@@ -251,7 +254,9 @@ class PlasticModel():
     def _increment_plastic_in_ocean(self):
         """ """
         for plastic in self.plastic:
-            self.plastic_in_ocean[plastic][self.current_year].append(self.plastic[plastic])
+            self.plastic_in_ocean[plastic][self.current_year].append(
+                self.plastic[plastic] / self.plastic_weight_constant
+            )
 
     def _increment_methane_prod(self, methane_prod):
         """ """

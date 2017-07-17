@@ -26,14 +26,16 @@ N_IT = 300
 ##########################################################################
 
 #################### CONSTANT ############################################
-CONSTANT = 1.0e-09 * 365
+CONSTANT = 1.0e-09 * 365 * 16 / 1e12
 LINSPACE_DOTS = 20
+METHANE_MASS = 16
+PLASTIC_WEIGHT_CONSTANT = 1e12
 ##########################################################################
 
 #################### VARIABLE ############################################
 ##### YEARLY AVERAGE
 # original: PLASTIC_TO_METHANE = 0.01 Not based on real values
-PLASTIC_TO_METHANE = linspace(0.005, 0.02, LINSPACE_DOTS)
+PLASTIC_TO_METHANE = linspace(0.06, 0.1, LINSPACE_DOTS)
 # New pellet: 4.44
 # NEW_PELLET_TO_METHANE = linspace(3.0, 6.0, LINSPACE_DOTS)
 # original: PELLET_TO_METHANE = 0.08 std 0.02

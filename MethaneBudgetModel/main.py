@@ -52,8 +52,10 @@ def main():
                          ax=ax)
     # ax.set_title('Total methane production through plastic', fontsize=fontsize,
     #              fontname='Times New Roman')
+    ax.set_ylim(bottom=-0.005)
     ax.set_ylabel(r'Tg of CH$_4$ per annum', fontsize=fontsize, fontname='Times New Roman')
     ax.set_xlabel(r'Year', fontsize=fontsize, fontname='Times New Roman')
+    ax.tick_params(axis='both', labelsize=16)
 
     ax = axes[1]#[0]
     matrix_multiple = np.asarray([[arr for arr in model.plastic_in_ocean[key].values()]
@@ -66,14 +68,17 @@ def main():
                          # value='plastic mass',
                          err_style='unit_traces',
                          condition=labels,
+                         color=['#2f3fd6', '#e09a0f', '#3dd82f', '#de7bfc'],
                          legend=True,
                          # ci=[68, 95],
                          n_boot=300,
                          ax=ax)
-
+    ax.legend(fontsize=20)
     ax.set_ylabel(r'Plastic weight (million of MT)',
                   fontsize=fontsize, fontname='Times New Roman')
     ax.set_xlabel(r'Year', fontsize=fontsize, fontname='Times New Roman')
+    ax.set_ylim(bottom=-0.05)
+    ax.tick_params(axis='both', labelsize=16)
     plt.tight_layout()
     fig.show()
     input('figure 1')

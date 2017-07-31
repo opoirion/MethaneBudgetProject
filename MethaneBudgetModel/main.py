@@ -28,7 +28,7 @@ def main():
 
     print('min: {0} max:{1} mean:{2} std:{3} med:{4}'.format(mmin, mmax, mmean, mstd, mmed))
 
-    years = model.methane_production_total.keys()
+    years = [year for year in model.methane_production_total.keys()]
 
     # make time serie for total methane production evolution
     ax = axes[0]#[0]
@@ -59,7 +59,7 @@ def main():
     matrix_multiple = np.asarray([[arr for arr in model.plastic_in_ocean[key].values()]
                                   for key in model.plastic_in_ocean])
 
-    labels = model.plastic_in_ocean.keys()
+    labels = [label for label in model.plastic_in_ocean.keys()]
 
     sea = seaborn.tsplot(data=matrix_multiple.T,
                          time=years,
@@ -76,7 +76,7 @@ def main():
     ax.set_xlabel(r'Year', fontsize=fontsize, fontname='Times New Roman')
     plt.tight_layout()
     fig.show()
-    raw_input('figure 1')
+    input('figure 1')
     fig, axes = plt.subplots(1, 2, figsize=(20, 12))
     # make time serie for annual methane production evolution
     ax = axes[0]
@@ -122,7 +122,7 @@ def main():
 
     fig.show()
 
-    raw_input('ok')
+    input('ok')
 
 
 

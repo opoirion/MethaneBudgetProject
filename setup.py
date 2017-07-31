@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-VERSION = '0.6.0'
+VERSION = '0.6.1'
 
 setup(name='MehtaneBudgetModel',
       version=VERSION,

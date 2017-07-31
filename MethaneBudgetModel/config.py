@@ -34,6 +34,7 @@ PLASTIC_WEIGHT_CONSTANT = 1e12
 ##########################################################################
 
 #################### VARIABLE ############################################
+PLASTIC_SCENARIO = 2
 ##### YEARLY AVERAGE
 # original: PLASTIC_TO_METHANE = 0.01 Not based on real values
 PLASTIC_TO_METHANE = linspace(0.06, 0.1, LINSPACE_DOTS)

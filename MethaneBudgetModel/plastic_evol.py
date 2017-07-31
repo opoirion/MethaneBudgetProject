@@ -12,6 +12,7 @@ from MethaneBudgetModel.config import PERC_PLASTIC_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PLASTIC_TRANSFORMED_TO_POWDER
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_FLAKE
 from MethaneBudgetModel.config import PERC_PELLET_TRANSFORMED_TO_POWDER
+from MethaneBudgetModel.config import PLASTIC_SCENARIO
 
 from MethaneBudgetModel.config import PLASTIC_WEIGHT_CONSTANT
 
@@ -77,6 +78,7 @@ class PlasticModel():
         self.powder_to_methane = POWDER_TO_METHANE
         self.constant = CONSTANT
         self.plastic_weight_constant = PLASTIC_WEIGHT_CONSTANT
+        self.plastic_scenario = PLASTIC_SCENARIO
 
         self.plastic = {
             'raw': 0.0,
@@ -146,6 +148,10 @@ class PlasticModel():
             for line in f_data:
                 line = line.strip(' \t\n' + sep).split(sep)
                 year, mass = int(line[0]), list(map(float, line[1:]))
+
+                if self.plastic_scenario is not None:
+                    mass = [mass[self.plastic_scenario]]
+
                 self.dumped_plastic_per_year[year] = mass
 
             self.params['plastic_scenario'] = len(mass)
@@ -323,6 +329,9 @@ class PlasticModel():
         for feature in self._params_var:
             score, pvalue = kendalltau(self._params_var[feature],
                                         self._final_values)
+            if np.isnan(pvalue):
+                continue
+
             self.features_score[feature] = score
 
             print('score: {0}, p-value: {1} for:{2}'.format(score, pvalue, feature))

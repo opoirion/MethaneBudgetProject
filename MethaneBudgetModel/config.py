@@ -17,7 +17,7 @@ from os.path import split as pathsplit
 PATH_THIS_FILE = pathsplit(abspath(__file__))[0]
 
 # path to the csv file with year and mass of plastic dumped
-PATH_PLASTIC_THROUGH_YEAR_DUMPED = PATH_THIS_FILE + '/../data/plastic_production_new_v2.csv'
+PATH_PLASTIC_THROUGH_YEAR_DUMPED = PATH_THIS_FILE + '/../data/plastic_production_new_v4.csv'
 SEPARATOR = ','
 
 

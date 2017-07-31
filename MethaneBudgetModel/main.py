@@ -110,11 +110,11 @@ def main():
     ax = axes[1]
 
     labels, scores = zip(*sorted(model.features_score.items(), key=lambda x:x[1]))
-
+    import ipdb;ipdb.set_trace()
     ax.bar(range(len(scores)), scores)
     ax.set_xticks(np.array(range(len(scores))) + 0.0)
     ax.set_xticklabels(labels,
-                       rotation=60, fontsize=10
+                       rotation=90, fontsize=10
     )
 
     ax.set_title('feature score')
@@ -122,7 +122,7 @@ def main():
 
     fig.show()
 
-    input('ok')
+    input('figure 2')
 
 
 

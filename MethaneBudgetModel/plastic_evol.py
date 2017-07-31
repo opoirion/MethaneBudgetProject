@@ -22,6 +22,7 @@ from MethaneBudgetModel.config import POWDER_TO_METHANE
 from MethaneBudgetModel.config import CONSTANT
 from MethaneBudgetModel.config import METHOD
 from MethaneBudgetModel.config import N_IT
+from MethaneBudgetModel.config import SEPARATOR
 
 from collections import defaultdict
 
@@ -102,7 +103,10 @@ class PlasticModel():
             'aged_pellet_to_methane': None,
             'flake_to_methane': None,
             'powder_to_methane': None,
+            'plastic_scenario': None,
             }
+
+        self._load_plastic_per_year()
 
         self.params_list = {
             'perc_flake_powder': PERC_FLAKE_TRANSFORMED_TO_POWDER,
@@ -119,10 +123,9 @@ class PlasticModel():
             'plastic_to_methane': PLASTIC_TO_METHANE,
             'aged_pellet_to_methane': AGED_PELLET_TO_METHANE,
             'flake_to_methane': FLAKE_TO_METHANE,
-            'powder_to_methane': POWDER_TO_METHANE
+            'powder_to_methane': POWDER_TO_METHANE,
+            'plastic_scenario': np.arange(self.params['plastic_scenario'])
         }
-
-        self._load_plastic_per_year()
 
         if self.method == 'EXACT':
             self._nb_experiments = self._compute_nb_experiments()
@@ -135,15 +138,17 @@ class PlasticModel():
         """ """
         return reduce(lambda x, y: x * y, map(len, self.params_list.values()))
 
-    def _load_plastic_per_year(self, sep=';'):
+    def _load_plastic_per_year(self, sep=SEPARATOR):
         """ """
         with open(PATH_PLASTIC_THROUGH_YEAR_DUMPED) as f_data:
             line = f_data.readline()
 
             for line in f_data:
                 line = line.strip(' \t\n' + sep).split(sep)
-                year, mass = int(line[0]), float(line[-1])
+                year, mass = int(line[0]), list(map(float, line[1:]))
                 self.dumped_plastic_per_year[year] = mass
+
+            self.params['plastic_scenario'] = len(mass)
 
     def next_params(self):
         """ """
@@ -216,11 +221,13 @@ class PlasticModel():
 
         self._methane_total = 0.0
         self.current_year = self.next_year(init=True)
-        self.incoming_plastic = self.dumped_plastic_per_year[self.current_year]
+        scenario = self.params['plastic_scenario']
+        self.incoming_plastic = self.dumped_plastic_per_year[self.current_year][scenario]
 
     def increment_one_year(self):
         """ """
         methane_prod = defaultdict(list)
+        scenario = self.params['plastic_scenario']
 
         self.plastic['powder'] = self.plastic['powder'] * (1.0 - self.params['powder_removed']) + \
                                  self.plastic['raw'] * self.params['perc_plastic_powder'] + \
@@ -252,7 +259,7 @@ class PlasticModel():
         self._increment_plastic_in_ocean()
 
         self.current_year = self.next_year()
-        self.incoming_plastic = self.dumped_plastic_per_year[self.current_year]
+        self.incoming_plastic = self.dumped_plastic_per_year[self.current_year][scenario]
 
     def _increment_plastic_in_ocean(self):
         """ """

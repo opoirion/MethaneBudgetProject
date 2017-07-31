@@ -34,17 +34,19 @@ PLASTIC_WEIGHT_CONSTANT = 1e12
 ##########################################################################
 
 #################### VARIABLE ############################################
+# maximal year
+MAX_YEAR = 2016
 # column of the plastic file used
 PLASTIC_SCENARIO = 1 # max
 ##### YEARLY AVERAGE
 # original: PLASTIC_TO_METHANE = 0.01 Not based on real values
 # true raw plastic production value = 4.101 std 0.23
-PLASTIC_TO_METHANE = linspace(4.101 - 0.23, 4.101 + 0.23, LINSPACE_DOTS)
+PLASTIC_TO_METHANE = linspace(8.48 -3, 8.48 + 3, LINSPACE_DOTS)
 # New pellet: 4.44
 # NEW_PELLET_TO_METHANE = linspace(3.0, 6.0, LINSPACE_DOTS)
 # original: PELLET_TO_METHANE = 0.08 std 0.02
 # Aged pellet: 9.03
-AGED_PELLET_TO_METHANE = linspace(0.31 - 0.04, 0.31 + 0.04, LINSPACE_DOTS)
+AGED_PELLET_TO_METHANE = linspace(5.8 - 0.6, 5.8 + 0.6, LINSPACE_DOTS)
 # original: FLAKE_TO_METHANE = 2.22 std 1.0
 # new value 123.35 (yearly average)
 FLAKE_TO_METHANE = linspace(2.22 - 1.05, 2.22 + 1.05, LINSPACE_DOTS)

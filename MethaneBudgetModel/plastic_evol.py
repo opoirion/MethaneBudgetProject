@@ -24,6 +24,7 @@ from MethaneBudgetModel.config import CONSTANT
 from MethaneBudgetModel.config import METHOD
 from MethaneBudgetModel.config import N_IT
 from MethaneBudgetModel.config import SEPARATOR
+from MethaneBudgetModel.config import MAX_YEAR
 
 from collections import defaultdict
 
@@ -79,6 +80,7 @@ class PlasticModel():
         self.constant = CONSTANT
         self.plastic_weight_constant = PLASTIC_WEIGHT_CONSTANT
         self.plastic_scenario = PLASTIC_SCENARIO
+        self.max_year = MAX_YEAR
 
         self.plastic = {
             'raw': 0.0,
@@ -169,13 +171,17 @@ class PlasticModel():
     def next_year(self, init=False):
         """ """
         if init:
-
             self._next_year_gen = None
 
         if not self._next_year_gen:
             self._next_year_gen = iter(sorted(self.dumped_plastic_per_year.keys()))
 
-        return next(self._next_year_gen)
+        year = next(self._next_year_gen)
+
+        if self.max_year and year > self.max_year:
+            raise StopIteration
+
+        return year
 
     def _next_params_exact(self):
         """ """
